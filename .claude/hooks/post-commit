@@ -1,0 +1,84 @@
+#!/bin/bash
+# ContentMind Platform - Post-Commit Hook
+# 代码提交后处理脚本
+
+set -e
+
+echo "📊 ContentMind Platform - 代码提交后处理开始..."
+echo "=============================================="
+
+# 获取提交信息
+COMMIT_HASH=$(git rev-parse HEAD)
+COMMIT_MSG=$(git log -1 --pretty=format:'%s')
+COMMIT_AUTHOR=$(git log -1 --pretty=format:'%an')
+COMMIT_TIME=$(git log -1 --pretty=format:'%ci')
+BRANCH_NAME=$(git branch --show-current)
+
+echo "📝 提交信息:"
+echo "   哈希值: $COMMIT_HASH"
+echo "   作者: $COMMIT_AUTHOR"
+echo "   分支: $BRANCH_NAME"
+echo "   时间: $COMMIT_TIME"
+echo "   消息: $COMMIT_MSG"
+echo ""
+
+# 检查是否有Java文件变更
+JAVA_FILES=$(git diff HEAD~1 --name-only | grep -E '\.(java)$' || true)
+
+if [ -n "$JAVA_FILES" ]; then
+    echo "🔧 [1/3] 生成JavaDoc API文档..."
+    if mvn javadoc:javadoc -q; then
+        echo "✅ API文档已更新"
+        echo "   文档位置: target/site/apidocs/"
+    else
+        echo "⚠️  API文档生成失败，但不影响提交"
+    fi
+    echo ""
+    
+    echo "📈 [2/3] 生成代码覆盖率报告..."
+    if mvn jacoco:report -q; then
+        echo "✅ 覆盖率报告已更新"
+        echo "   报告位置: target/site/jacoco/"
+    else
+        echo "⚠️  覆盖率报告生成失败，但不影响提交"
+    fi
+    echo ""
+fi
+
+# 发送提交通知
+echo "📢 [3/3] 发送提交通知..."
+echo "🔔 代码已成功提交到 $BRANCH_NAME 分支"
+echo "   📦 提交: $COMMIT_MSG"
+echo "   👤 作者: $COMMIT_AUTHOR"
+echo "   🕐 时间: $COMMIT_TIME"
+
+# 如果是主要分支，触发额外处理
+if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "develop" ]]; then
+    echo ""
+    echo "🚀 检测到重要分支提交，执行额外处理..."
+    
+    # 检查是否需要更新版本号
+    if echo "$COMMIT_MSG" | grep -qE "^(feat|fix|perf|BREAKING CHANGE)"; then
+        echo "   📋 建议更新版本号（检测到功能性变更）"
+    fi
+    
+    # 如果有pom.xml变更，提示依赖检查
+    if git diff HEAD~1 --name-only | grep -q "pom.xml"; then
+        echo "   🔍 检测到pom.xml变更，建议运行依赖安全检查："
+        echo "      mvn dependency-check:check"
+    fi
+fi
+
+echo ""
+echo "=============================================="
+echo "✅ 提交后处理完成"
+echo "⏱️  处理时间: $(date +'%Y-%m-%d %H:%M:%S')"
+echo ""
+
+# 可选：自动推送到远程仓库（谨慎使用）
+# if [[ "$BRANCH_NAME" != "main" && "$BRANCH_NAME" != "develop" ]]; then
+#     echo "🌐 自动推送到远程分支..."
+#     git push origin "$BRANCH_NAME" --quiet || echo "⚠️  推送失败，请手动推送"
+# fi
+
+exit 0

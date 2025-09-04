@@ -1,0 +1,80 @@
+# ContentMind Platform - Claude Code Hooks配置文件
+
+hooks:
+  # 提交前检查
+  pre-commit:
+    enabled: true
+    timeout: 300  # 5分钟
+    description: "代码提交前质量检查"
+    checks:
+      - name: "format-check"
+        description: "代码格式检查"
+        command: "mvn spotless:check"
+        required: true
+      - name: "unit-tests" 
+        description: "单元测试执行"
+        command: "mvn test -Dtest=\"!*IntegrationTest\""
+        required: true
+      - name: "static-analysis"
+        description: "静态代码分析"
+        command: "mvn spotbugs:check"
+        required: true
+      - name: "coverage-check"
+        description: "测试覆盖率检查"
+        command: "mvn jacoco:check"
+        required: true
+        
+  # 提交后处理
+  post-commit:
+    enabled: true
+    timeout: 120  # 2分钟
+    description: "代码提交后处理"
+    actions:
+      - name: "generate-docs"
+        description: "生成API文档"
+        command: "mvn javadoc:javadoc"
+        required: false
+      - name: "send-notification"
+        description: "发送通知"
+        command: "echo \"代码已提交: $(git log -1 --pretty=format:'%s')\""
+        required: false
+        
+  # 推送前检查
+  pre-push:
+    enabled: true
+    timeout: 600  # 10分钟
+    description: "代码推送前完整检查"
+    checks:
+      - name: "full-test-suite"
+        description: "完整测试套件"
+        command: "mvn clean test"
+        required: true
+      - name: "security-scan"
+        description: "安全漏洞扫描"
+        command: "mvn org.owasp:dependency-check-maven:check"
+        required: true
+      - name: "integration-tests"
+        description: "集成测试"
+        command: "mvn failsafe:integration-test"
+        required: false
+        
+# 通知配置
+notifications:
+  slack:
+    enabled: false
+    webhook_url: ""
+    channel: "#contentmind-dev"
+    
+  email:
+    enabled: false
+    smtp_server: "smtp.gmail.com"
+    from: "contentmind@example.com"
+    to: ["team@contentmind.com"]
+    
+# 排除文件
+exclude_patterns:
+  - "target/**"
+  - "node_modules/**"
+  - "*.log"
+  - ".git/**"
+  - "uploads/**"

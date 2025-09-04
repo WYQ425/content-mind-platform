@@ -1,0 +1,207 @@
+# ContentMind Platform - Git忽略文件配置
+
+### Java ###
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+### Spring Boot ###
+.mvn/
+mvnw
+mvnw.cmd
+
+### IDE ###
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+.metadata
+.recommenders
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.factorypath
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### 操作系统 ###
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+### 应用特定 ###
+# 日志文件
+logs/
+*.log
+
+# 上传文件
+uploads/
+uploads/dev/
+uploads/test/
+uploads/prod/
+
+# 配置文件（包含敏感信息）
+application-local.yml
+application-local.properties
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# 缓存文件
+.cache/
+
+# 临时文件
+temp/
+tmp/
+
+# 测试报告
+test-output/
+allure-results/
+
+# 文档生成
+docs/_build/
+site/
+
+### 安全相关 ###
+# 密钥文件
+*.pem
+*.key
+*.crt
+*.p12
+*.keystore
+*.jks
+
+# 环境变量文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+### 前端相关 ###
+# 依赖
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 构建输出
+build/
+dist/
+.next/
+
+# 包锁文件（根据团队约定）
+package-lock.json
+yarn.lock
+
+# 缓存
+.npm
+.eslintcache
+
+### Docker ###
+.dockerignore
+
+### 性能分析 ###
+*.hprof
+
+### 备份文件 ###
+*.backup
+*.bak
+*.old
+
+### Claude Code特定 ###
+# Claude输出缓存（如果有）
+.claude-cache/
+
+### 其他 ###
+# 系统文件
+*.pid
+*.seed
+*.pid.lock
+
+# 运行时文件
+*.tgz
+*.tar.gz
+
+# 覆盖率报告
+coverage/
+.nyc_output
+
+# 监控数据
+monitoring/
+metrics/

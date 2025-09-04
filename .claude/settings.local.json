@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh:*)",
+      "Bash(git config:*)",
+      "WebSearch",
+      "Bash(chmod:*)",
+      "Read(/D:\\projects\\content-mind\\.claude\\output-styles/**)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

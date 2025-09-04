@@ -1,0 +1,68 @@
+# 生产环境配置
+server:
+  port: 8080
+
+spring:
+  # 数据源配置
+  datasource:
+    url: ${DB_URL:jdbc:mysql://prod-mysql:3306/content_mind_prod?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8}
+    username: ${DB_USERNAME:prod_user}
+    password: ${DB_PASSWORD:prod_password}
+    druid:
+      initial-size: 20
+      min-idle: 20
+      max-active: 200
+
+  # Redis配置
+  redis:
+    host: ${REDIS_HOST:prod-redis}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 0
+    lettuce:
+      pool:
+        max-active: 200
+        max-idle: 50
+
+  # RabbitMQ配置
+  rabbitmq:
+    host: ${RABBITMQ_HOST:prod-rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:prod}
+    password: ${RABBITMQ_PASSWORD:prod_password}
+    virtual-host: ${RABBITMQ_VHOST:/prod}
+
+  # Elasticsearch配置
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URIS:http://prod-elasticsearch:9200}
+    username: ${ELASTICSEARCH_USERNAME:}
+    password: ${ELASTICSEARCH_PASSWORD:}
+
+# 日志配置
+logging:
+  level:
+    com.contentmind.platform: INFO
+    org.springframework: WARN
+    org.hibernate.SQL: WARN
+  file:
+    name: /var/log/content-mind-platform/application.log
+
+# 应用配置
+app:
+  jwt:
+    secret-key: ${JWT_SECRET:production-jwt-secret-key-change-me}
+  upload:
+    path: ${UPLOAD_PATH:/data/uploads}
+    domain: ${UPLOAD_DOMAIN:https://api.contentmind.com}
+  cache:
+    default-ttl: 7200 # 2小时
+
+# 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: never

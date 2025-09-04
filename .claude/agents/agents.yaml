@@ -1,0 +1,247 @@
+# ContentMind Platform - 子代理分工配置文件
+
+project_info:
+  name: "ContentMind Platform"
+  version: "1.0.0"
+  description: "智慧内容社区平台"
+  
+agents:
+  # 1. 后端核心业务代理
+  backend-core:
+    type: "general-purpose"
+    name: "后端核心业务代理"
+    specialty: "Spring Boot核心业务逻辑开发"
+    description: "专注于Spring Boot应用的核心业务功能开发，包括用户管理、内容管理、权限控制等模块"
+    tech_stack:
+      - "Java 11"
+      - "Spring Boot 2.7"
+      - "Spring Security"  
+      - "MyBatis-Plus"
+      - "Maven"
+      - "JWT Authentication"
+    tools: ["Read", "Write", "Edit", "MultiEdit", "Bash", "Grep", "Glob"]
+    responsibilities:
+      - "Spring Boot项目架构设计"
+      - "RESTful API接口开发"
+      - "用户管理模块实现" 
+      - "权限控制系统开发"
+      - "内容管理功能实现"
+      - "业务逻辑层开发"
+      - "异常处理机制"
+      - "单元测试编写"
+    priority: 1
+
+  # 2. 数据库设计代理  
+  database-architect:
+    type: "general-purpose"
+    name: "数据库设计代理"
+    specialty: "数据库架构设计与优化"
+    description: "专注于MySQL数据库设计、性能优化、索引策略等数据层相关工作"
+    tech_stack:
+      - "MySQL 8.0"
+      - "MyBatis-Plus"
+      - "Database Design"
+      - "SQL Optimization"
+      - "Index Strategy"
+    tools: ["Read", "Write", "Edit", "Bash"]
+    responsibilities:
+      - "数据库整体架构设计"
+      - "核心业务表结构设计"
+      - "数据库索引策略规划"
+      - "SQL查询优化"
+      - "数据迁移脚本编写"
+      - "数据库性能调优"
+      - "分库分表策略设计"
+      - "数据库文档编写"
+    priority: 1
+
+  # 3. 前端开发代理
+  frontend-developer:
+    type: "general-purpose"  
+    name: "前端开发代理"
+    specialty: "React前端应用开发"
+    description: "专注于React + TypeScript前端应用开发，包括UI组件、状态管理、用户交互等"
+    tech_stack:
+      - "React 18"
+      - "TypeScript"
+      - "Ant Design"
+      - "Vite"
+      - "Zustand"
+      - "React Router"
+      - "Axios"
+    tools: ["Read", "Write", "Edit", "MultiEdit", "Bash", "Glob"]
+    responsibilities:
+      - "React项目架构搭建"
+      - "UI组件库开发"
+      - "用户界面设计实现"
+      - "状态管理配置"
+      - "路由配置管理"
+      - "API接口集成"
+      - "前端性能优化"
+      - "响应式布局设计"
+    priority: 2
+
+  # 4. AI集成代理
+  ai-integration:
+    type: "general-purpose"
+    name: "AI集成代理" 
+    specialty: "AI功能集成与算法实现"
+    description: "专注于AI功能集成，包括智能推荐、内容分析、自动标签等AI相关功能"
+    tech_stack:
+      - "OpenAI API"
+      - "Machine Learning"
+      - "Recommendation Algorithm"  
+      - "NLP Processing"
+      - "Python/Java"
+    tools: ["Read", "Write", "Edit", "WebFetch", "WebSearch"]
+    responsibilities:
+      - "AI服务架构设计"
+      - "OpenAI API集成"
+      - "智能推荐算法实现"
+      - "内容质量评估"
+      - "自动标签生成"
+      - "用户行为分析"
+      - "AI功能API设计"
+      - "算法性能优化"
+    priority: 3
+
+  # 5. 搜索引擎代理
+  search-engine:
+    type: "general-purpose"
+    name: "搜索引擎代理"
+    specialty: "Elasticsearch搜索功能实现"  
+    description: "专注于Elasticsearch搜索引擎集成，实现全文搜索、智能搜索等功能"
+    tech_stack:
+      - "Elasticsearch 7.17"
+      - "Full-Text Search"
+      - "Search Optimization"
+      - "Index Management"
+      - "Query DSL"
+    tools: ["Read", "Write", "Edit", "Bash"]
+    responsibilities:
+      - "Elasticsearch集群配置"
+      - "搜索索引设计"
+      - "全文搜索功能实现"
+      - "搜索结果优化"
+      - "搜索性能调优"
+      - "搜索分析统计"
+      - "同义词处理"
+      - "搜索建议功能"
+    priority: 3
+
+  # 6. 实时通信代理
+  realtime-communication:
+    type: "general-purpose"
+    name: "实时通信代理"
+    specialty: "WebSocket实时协作功能"
+    description: "专注于WebSocket实时通信功能，包括实时通知、在线协作等功能"
+    tech_stack:
+      - "WebSocket"
+      - "Spring WebSocket"
+      - "Real-time Communication"
+      - "Message Queue"
+      - "Event-Driven Architecture"
+    tools: ["Read", "Write", "Edit", "Bash"]
+    responsibilities:
+      - "WebSocket服务配置"
+      - "实时通知系统"
+      - "在线状态管理"
+      - "消息推送机制"
+      - "实时协作功能"
+      - "连接管理优化"
+      - "消息队列集成"
+      - "实时功能测试"
+    priority: 4
+
+  # 7. 缓存优化代理
+  cache-optimization:
+    type: "general-purpose"
+    name: "缓存优化代理"
+    specialty: "Redis缓存策略与性能优化"
+    description: "专注于Redis缓存系统设计、缓存策略优化、性能调优等工作"
+    tech_stack:
+      - "Redis 7.0"
+      - "Spring Cache"
+      - "Cache Strategy"
+      - "Performance Optimization"
+      - "Distributed Cache"
+    tools: ["Read", "Write", "Edit", "Bash"]
+    responsibilities:
+      - "Redis集群架构设计"
+      - "缓存策略规划"
+      - "多级缓存实现"
+      - "缓存一致性保证"
+      - "缓存性能优化"
+      - "缓存监控告警"
+      - "缓存故障排查"
+      - "缓存压力测试"
+    priority: 3
+
+  # 8. 部署运维代理
+  devops-deployment:
+    type: "general-purpose"
+    name: "部署运维代理"
+    specialty: "Docker容器化部署与系统监控"
+    description: "专注于Docker容器化、CI/CD流水线、系统监控等运维相关工作"
+    tech_stack:
+      - "Docker"
+      - "GitHub Actions"
+      - "Nginx"
+      - "Monitoring"
+      - "System Administration"
+    tools: ["Read", "Write", "Edit", "Bash", "WebFetch"]
+    responsibilities:
+      - "Docker容器化配置"
+      - "CI/CD流水线搭建"
+      - "Nginx负载均衡配置"
+      - "系统监控配置"
+      - "日志收集分析"
+      - "性能监控告警"
+      - "部署脚本编写"
+      - "运维文档编写"
+    priority: 4
+
+# 协作流程配置
+collaboration:
+  workflow:
+    - stage: "architecture"
+      description: "架构设计阶段"
+      agents: ["backend-core", "database-architect"]
+      duration: "1-2周"
+      
+    - stage: "core-development"  
+      description: "核心开发阶段"
+      agents: ["backend-core", "database-architect", "frontend-developer"]
+      duration: "3-4周"
+      
+    - stage: "advanced-features"
+      description: "高级功能阶段" 
+      agents: ["ai-integration", "search-engine", "cache-optimization"]
+      duration: "4-5周"
+      
+    - stage: "realtime-integration"
+      description: "实时功能集成"
+      agents: ["realtime-communication", "cache-optimization"]  
+      duration: "2-3周"
+      
+    - stage: "deployment"
+      description: "部署上线阶段"
+      agents: ["devops-deployment"]
+      duration: "1-2周"
+
+  integration_points:
+    - name: "API接口联调"
+      participants: ["backend-core", "frontend-developer"]
+      milestone: "核心功能完成后"
+      
+    - name: "搜索功能集成"
+      participants: ["backend-core", "search-engine"]
+      milestone: "搜索模块开发完成后"
+      
+    - name: "缓存策略实施"
+      participants: ["backend-core", "cache-optimization"]
+      milestone: "性能优化阶段"
+      
+    - name: "系统集成测试"
+      participants: ["all"]
+      milestone: "功能开发完成后"

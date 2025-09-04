@@ -1,0 +1,86 @@
+#!/bin/bash
+# ContentMind Platform - Pre-Commit Hook
+# 代码提交前质量检查脚本
+
+set -e  # 遇到错误立即退出
+
+echo "🔍 ContentMind Platform - 代码提交前检查开始..."
+echo "=============================================="
+
+# 检查是否有待提交的Java文件
+JAVA_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(java)$' || true)
+
+if [ -z "$JAVA_FILES" ]; then
+    echo "ℹ️  没有Java文件变更，跳过检查"
+    exit 0
+fi
+
+echo "📝 发现以下Java文件变更:"
+echo "$JAVA_FILES"
+echo ""
+
+# 1. 代码格式检查
+echo "🎨 [1/4] 检查代码格式规范..."
+if mvn spotless:check -q; then
+    echo "✅ 代码格式检查通过"
+else
+    echo "❌ 代码格式不符合规范！"
+    echo "💡 请运行以下命令修复："
+    echo "   mvn spotless:apply"
+    exit 1
+fi
+echo ""
+
+# 2. 单元测试
+echo "🧪 [2/4] 运行单元测试..."
+if mvn test -Dtest="!*IntegrationTest" -q; then
+    echo "✅ 单元测试通过"
+else
+    echo "❌ 单元测试失败！"
+    echo "💡 请检查测试代码并修复失败的测试用例"
+    exit 1
+fi
+echo ""
+
+# 3. 静态代码分析
+echo "🔍 [3/4] 静态代码分析..."
+if mvn spotbugs:check -q; then
+    echo "✅ 静态代码分析通过"
+else
+    echo "❌ 发现代码质量问题！"
+    echo "💡 请查看target/spotbugsXml.xml报告并修复问题"
+    exit 1
+fi
+echo ""
+
+# 4. 测试覆盖率检查
+echo "📊 [4/4] 检查测试覆盖率..."
+if mvn jacoco:check -q; then
+    echo "✅ 测试覆盖率达标"
+else
+    echo "❌ 测试覆盖率不足80%！"
+    echo "💡 请增加测试用例提高代码覆盖率"
+    exit 1
+fi
+echo ""
+
+# 检查提交信息格式 (Conventional Commits)
+COMMIT_MSG_FILE=$1
+if [ -f "$COMMIT_MSG_FILE" ]; then
+    COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+    if ! echo "$COMMIT_MSG" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .+"; then
+        echo "❌ 提交信息格式不符合Conventional Commits规范！"
+        echo "💡 格式示例："
+        echo "   feat(user): add user registration feature"
+        echo "   fix(auth): resolve JWT token validation issue"
+        echo "   docs(readme): update installation instructions"
+        exit 1
+    fi
+fi
+
+echo "=============================================="
+echo "🎉 所有检查通过！代码可以提交"
+echo "⏱️  检查耗时: $(date +'%Y-%m-%d %H:%M:%S')"
+echo ""
+
+exit 0

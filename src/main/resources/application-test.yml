@@ -1,0 +1,42 @@
+# 测试环境配置
+server:
+  port: 8081
+
+spring:
+  # 数据源配置
+  datasource:
+    url: jdbc:mysql://test-mysql:3306/content_mind_test?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+    username: test_user
+    password: test_password
+
+  # Redis配置
+  redis:
+    host: test-redis
+    port: 6379
+    database: 1
+
+  # RabbitMQ配置
+  rabbitmq:
+    host: test-rabbitmq
+    port: 5672
+    username: test
+    password: test
+    virtual-host: /test
+
+  # Elasticsearch配置
+  elasticsearch:
+    uris: http://test-elasticsearch:9200
+
+# 日志配置
+logging:
+  level:
+    com.contentmind.platform: INFO
+    org.springframework: WARN
+
+# 应用配置
+app:
+  upload:
+    path: ./uploads/test
+    domain: http://test.contentmind.com
+  cache:
+    default-ttl: 1800 # 30分钟
