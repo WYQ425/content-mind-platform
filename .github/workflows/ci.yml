@@ -1,0 +1,276 @@
+# ContentMind Platform - CI/CD Pipeline
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  JAVA_VERSION: '11'
+  MAVEN_OPTS: -Xmx3000m
+  MAVEN_CLI_OPTS: --batch-mode --errors --fail-at-end --show-version
+
+jobs:
+  # 代码质量检查
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # 完整历史用于SonarQube分析
+
+    - name: Set up JDK ${{ env.JAVA_VERSION }}
+      uses: actions/setup-java@v3
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Cache Maven Dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Code Format Check
+      run: mvn spotless:check ${{ env.MAVEN_CLI_OPTS }}
+
+    - name: Compile
+      run: mvn compile ${{ env.MAVEN_CLI_OPTS }}
+
+    - name: Static Code Analysis
+      run: mvn spotbugs:check ${{ env.MAVEN_CLI_OPTS }}
+
+    - name: Upload SpotBugs Reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: spotbugs-reports
+        path: target/spotbugsXml.xml
+
+  # 单元测试
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK ${{ env.JAVA_VERSION }}
+      uses: actions/setup-java@v3
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Run Unit Tests
+      run: mvn test ${{ env.MAVEN_CLI_OPTS }} -Dtest="!*IntegrationTest"
+
+    - name: Generate Test Report
+      run: mvn jacoco:report ${{ env.MAVEN_CLI_OPTS }}
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results
+        path: |
+          target/surefire-reports/
+          target/site/jacoco/
+
+    - name: Check Test Coverage
+      run: mvn jacoco:check ${{ env.MAVEN_CLI_OPTS }}
+
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: target/site/jacoco/jacoco.xml
+        fail_ci_if_error: true
+
+  # 集成测试
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: content_mind_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis:7.0-alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK ${{ env.JAVA_VERSION }}
+      uses: actions/setup-java@v3
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Wait for MySQL
+      run: |
+        until mysqladmin ping -h"127.0.0.1" -P"3306" -u"root" -p"root" --silent; do
+          echo 'Waiting for MySQL...'
+          sleep 2
+        done
+
+    - name: Run Integration Tests
+      run: mvn failsafe:integration-test failsafe:verify ${{ env.MAVEN_CLI_OPTS }}
+      env:
+        SPRING_PROFILES_ACTIVE: test
+        DB_URL: jdbc:mysql://127.0.0.1:3306/content_mind_test
+        DB_USERNAME: root
+        DB_PASSWORD: root
+        REDIS_HOST: 127.0.0.1
+        REDIS_PORT: 6379
+
+    - name: Upload Integration Test Results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: integration-test-results
+        path: target/failsafe-reports/
+
+  # 安全扫描
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: code-quality
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK ${{ env.JAVA_VERSION }}
+      uses: actions/setup-java@v3
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        cache: maven
+
+    - name: OWASP Dependency Check
+      run: mvn org.owasp:dependency-check-maven:check ${{ env.MAVEN_CLI_OPTS }}
+
+    - name: Upload Security Report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-reports
+        path: target/dependency-check-report.html
+
+  # 构建和发布
+  build-and-publish:
+    name: Build and Publish
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, security-scan]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK ${{ env.JAVA_VERSION }}
+      uses: actions/setup-java@v3
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build Application
+      run: mvn clean package ${{ env.MAVEN_CLI_OPTS }} -DskipTests
+
+    - name: Extract Version
+      id: version
+      run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository }}:latest
+          ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: jar-artifact
+        path: target/*.jar
+
+  # 部署到测试环境
+  deploy-test:
+    name: Deploy to Test Environment
+    runs-on: ubuntu-latest
+    needs: build-and-publish
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment: test
+    
+    steps:
+    - name: Deploy to Test Server
+      run: |
+        echo "部署到测试环境的脚本"
+        echo "这里可以添加SSH部署或者Kubernetes部署命令"
+        echo "Docker镜像: ghcr.io/${{ github.repository }}:${{ github.sha }}"
+
+  # 部署到生产环境
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-publish
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    
+    steps:
+    - name: Deploy to Production Server
+      run: |
+        echo "部署到生产环境的脚本"
+        echo "这里需要手动审批"
+        echo "Docker镜像: ghcr.io/${{ github.repository }}:${{ github.sha }}"
+
+  # 通知
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [deploy-test, deploy-production]
+    if: always()
+    
+    steps:
+    - name: Notify Success
+      if: needs.deploy-test.result == 'success' || needs.deploy-production.result == 'success'
+      run: echo "✅ 部署成功！"
+      
+    - name: Notify Failure
+      if: needs.deploy-test.result == 'failure' || needs.deploy-production.result == 'failure'
+      run: echo "❌ 部署失败！"
